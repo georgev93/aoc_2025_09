@@ -25,7 +25,7 @@ mod tests {
     const EXAMPLE_PT1: u64 = 50;
     const EXAMPLE_PT2: u64 = 24;
     const ACTUAL_PT1: u64 = 4771532800;
-    const ACTUAL_PT2: u64 = 0; // 4652231070 too high
+    const ACTUAL_PT2: u64 = 1544362560;
 
     // #[test]
     // fn example() {
