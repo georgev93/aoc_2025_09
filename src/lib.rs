@@ -10,7 +10,8 @@ pub fn solve_pt1(input_file: &str) -> u64 {
 }
 
 pub fn solve_pt2(input_file: &str) -> u64 {
-    0
+    let mut floor = Floor::new(input_file);
+    floor.get_largest_rectangle_inside_perimeter()
 }
 
 pub fn solve(input_file: &str) -> (u64, u64) {
@@ -22,9 +23,9 @@ mod tests {
     use super::*;
 
     const EXAMPLE_PT1: u64 = 50;
-    const EXAMPLE_PT2: u64 = 0;
+    const EXAMPLE_PT2: u64 = 24;
     const ACTUAL_PT1: u64 = 4771532800;
-    const ACTUAL_PT2: u64 = 0;
+    const ACTUAL_PT2: u64 = 0; // 4652231070 too high
 
     // #[test]
     // fn example() {
@@ -53,6 +54,6 @@ mod tests {
     fn actual_pts() {
         let my_file = FileParser::new("data/input.txt");
         assert_eq!(solve_pt1(my_file.get_str()), ACTUAL_PT1);
-        // assert_eq!(solve_pt2(my_file.get_str()), ACTUAL_PT2);
+        assert_eq!(solve_pt2(my_file.get_str()), ACTUAL_PT2);
     }
 }
