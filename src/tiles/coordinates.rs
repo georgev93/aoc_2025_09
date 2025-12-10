@@ -11,7 +11,7 @@ pub enum TravelDirection {
 #[derive(Eq, Hash, PartialEq, Copy, Clone, Debug)]
 pub struct Coordinate {
     // Treated as [X, Y]
-    coord: [i64; 2],
+    pub coord: [i64; 2],
 }
 
 macro_rules! push_coords_between_on {
