@@ -30,3 +30,7 @@ inherits = "release"
 opt-level = "z"
 lto = true
 
+[dependencies]
+itertools = "0.14.0"
+num-traits = "0.2.19"
+

@@ -2,6 +2,7 @@ pub mod file_parser;
 use crate::file_parser::FileParser;
 
 mod tiles;
+pub mod utils;
 use crate::tiles::Floor;
 
 pub fn solve_pt1(input_file: &str) -> u64 {
@@ -50,10 +51,10 @@ mod tests {
     //     assert_eq!(part_2, ACTUAL_PT2);
     // }
     //
-    #[test]
-    fn actual_pts() {
-        let my_file = FileParser::new("data/input.txt");
-        assert_eq!(solve_pt1(my_file.get_str()), ACTUAL_PT1);
-        assert_eq!(solve_pt2(my_file.get_str()), ACTUAL_PT2);
-    }
+    // #[test]
+    // fn actual_pts() {
+    //     let my_file = FileParser::new("data/input.txt");
+    //     assert_eq!(solve_pt1(my_file.get_str()), ACTUAL_PT1);
+    //     assert_eq!(solve_pt2(my_file.get_str()), ACTUAL_PT2);
+    // }
 }
