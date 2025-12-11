@@ -48,7 +48,7 @@ impl Coordinate {
         self.coord
             .iter()
             .zip(other.coord.iter())
-            .fold(1u64, |acc, (a, b)| acc * ((a - b) + 1).unsigned_abs())
+            .fold(1u64, |acc, (a, b)| acc * ((a - b).unsigned_abs() + 1))
     }
 
     #[inline(always)]
@@ -89,14 +89,16 @@ impl Coordinate {
             }
         }
 
-        // println!("Coords between called on {} and {}", &self, other);
-        // dbg!(&coords_between);
         coords_between
     }
 
-    pub fn get_rec_inner_perimeter(&self, other: &Self) -> Vec<Self> {
+    pub fn get_rec_inner_perimeter(&self, other: &Self) -> Option<Vec<Self>> {
         let (mut x_min, mut x_max) = Self::get_min_max(self.x(), other.x());
         let (mut y_min, mut y_max) = Self::get_min_max(self.y(), other.y());
+
+        if (x_min == x_max) || (y_min == y_max) {
+            return None;
+        }
 
         x_max -= 1;
         y_max -= 1;
@@ -104,8 +106,20 @@ impl Coordinate {
         y_min += 1;
 
         // Single line rectangle
-        if (x_min == x_max) || (y_min == y_max) {
-            return vec![];
+        if x_min == x_max {
+            let mut ret_vec =
+                Coordinate::new(x_min, y_min).get_coords_between(&Coordinate::new(x_min, y_max));
+            ret_vec.push(Coordinate::new(x_min, y_min));
+            ret_vec.push(Coordinate::new(x_min, y_max));
+            return Some(ret_vec);
+        }
+
+        if y_min == y_max {
+            let mut ret_vec =
+                Coordinate::new(x_min, y_min).get_coords_between(&Coordinate::new(x_max, y_min));
+            ret_vec.push(Coordinate::new(x_min, y_min));
+            ret_vec.push(Coordinate::new(x_max, y_min));
+            return Some(ret_vec);
         }
 
         let mut ret_vec: Vec<Self> =
@@ -113,24 +127,24 @@ impl Coordinate {
 
         let corners_arr = [
             Self::new(x_min, y_min),
-            Self::new(x_max, y_min),
             Self::new(x_min, y_max),
             Self::new(x_max, y_max),
+            Self::new(x_max, y_min),
         ];
 
         corners_arr
             .iter()
             .circular_tuple_windows()
             .for_each(|(a, b)| {
-                ret_vec.extend(
-                    a.get_coords_between(b)
-                        .into_iter()
-                        .skip(1)
-                        .collect::<Vec<Self>>(),
-                )
+                ret_vec.extend(a.get_coords_between(b).into_iter().collect::<Vec<Self>>())
             });
 
-        ret_vec
+        ret_vec.push(Coordinate::new(x_min, y_max));
+        ret_vec.push(Coordinate::new(x_min, y_min));
+        ret_vec.push(Coordinate::new(x_max, y_min));
+        ret_vec.push(Coordinate::new(x_max, y_max));
+
+        Some(ret_vec)
     }
 
     #[inline(always)]

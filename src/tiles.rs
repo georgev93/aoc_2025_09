@@ -7,6 +7,7 @@ enum TileColor {
     Red,
     Green,
     White,
+    Black,
 }
 
 impl fmt::Display for TileColor {
@@ -15,6 +16,7 @@ impl fmt::Display for TileColor {
             TileColor::Red => write!(f, "x"),
             TileColor::Green => write!(f, "o"),
             TileColor::White => write!(f, "."),
+            TileColor::Black => write!(f, "?"),
         }
     }
 }
@@ -25,6 +27,7 @@ impl fmt::Debug for TileColor {
             TileColor::Red => write!(f, "x"),
             TileColor::Green => write!(f, "o"),
             TileColor::White => write!(f, "."),
+            TileColor::Black => write!(f, "?"),
         }
     }
 }
@@ -54,15 +57,27 @@ impl Floor {
             })
             .collect();
 
-        let red_tiles_compressed: Vec<Coordinate> = Vec::with_capacity(red_tiles.len());
+        let red_tiles_compressed: Vec<Coordinate> = Vec::with_capacity(red_tiles.len() * 2);
 
-        let mut x_values: Vec<i64> = red_tiles.iter().map(|coord| coord.coord[0]).collect();
+        let mut x_values: Vec<i64> = red_tiles.iter().map(|coord| coord.x()).collect();
         x_values.sort();
         x_values.dedup();
 
-        let mut y_values: Vec<i64> = red_tiles.iter().map(|coord| coord.coord[1]).collect();
+        for idx in (0..(x_values.len() - 1)).rev() {
+            x_values.insert(idx + 1, (x_values[idx] + x_values[idx + 1]) / 2);
+        }
+        x_values.insert(0, 0);
+        x_values.push(i64::MAX);
+
+        let mut y_values: Vec<i64> = red_tiles.iter().map(|coord| coord.y()).collect();
         y_values.sort();
         y_values.dedup();
+
+        for idx in (0..(y_values.len() - 1)).rev() {
+            y_values.insert(idx + 1, (y_values[idx] + y_values[idx + 1]) / 2);
+        }
+        y_values.insert(0, 0);
+        y_values.push(i64::MAX);
 
         let compressed_grid: Vec<Vec<TileColor>> =
             vec![vec![TileColor::White; x_values.len()]; y_values.len()];
@@ -85,7 +100,10 @@ impl Floor {
     }
 
     fn make_perimeter(&mut self) {
-        let mut red_tile_iter = self.red_tiles_compressed.iter();
+        let mut red_tiles_compressed_wrapped = self.red_tiles_compressed.clone();
+        red_tiles_compressed_wrapped.push(self.red_tiles_compressed[0]);
+
+        let mut red_tile_iter = red_tiles_compressed_wrapped.iter();
 
         let mut last_tile = red_tile_iter.next().unwrap();
         self.compressed_grid[last_tile.y() as usize][last_tile.x() as usize] = TileColor::Red;
@@ -104,9 +122,7 @@ impl Floor {
         for (coord1_idx, coord1) in self.red_tiles.iter().enumerate() {
             for coord2 in self.red_tiles.iter().skip(coord1_idx + 1) {
                 let this_rec_size = coord1.get_rec_area(coord2);
-                // println!("Evaluated size: {}", this_rec_size);
                 if this_rec_size > largest {
-                    // println!("New largest: {}", this_rec_size);
                     largest = this_rec_size;
                 }
             }
@@ -128,10 +144,6 @@ impl Floor {
                 let decompressed_coord2 = self.decompress(coord2);
                 let size = decompressed_coord1.get_rec_area(&decompressed_coord2) as i64;
                 rectangles.push((size, (coord1, coord2)));
-                // println!(
-                //     "Calculating rectangle {} out of {} at coords {}, {} assessed to have size {}",
-                // rectangle_counter, num_of_rec, decompressed_coord1, decompressed_coord2, size
-                // );
             }
         }
         rectangles.sort_unstable_by_key(|e| -e.0);
@@ -139,10 +151,6 @@ impl Floor {
         rectangle_counter = 0;
         for rec in rectangles {
             rectangle_counter += 1;
-            println!(
-                "Evaluating rectangle {} out of {} with size {}",
-                rectangle_counter, num_of_rec, rec.0
-            );
             if self.is_rectangle_usable(rec.1.0, rec.1.1) {
                 return rec.0 as u64;
             }
@@ -151,9 +159,13 @@ impl Floor {
     }
 
     fn is_rectangle_usable(&self, coord1: &Coordinate, coord2: &Coordinate) -> bool {
-        // println!("Examining rectangle at coords {}, {}", coord1, coord2);
-        // dbg!(&self.compressed_grid);
         let inner_perim_coords = coord1.get_rec_inner_perimeter(coord2);
+
+        if inner_perim_coords.is_none() {
+            return false;
+        }
+
+        let inner_perim_coords = inner_perim_coords.unwrap();
 
         for coord in inner_perim_coords {
             if self.compressed_grid[coord.y() as usize][coord.x() as usize] != TileColor::White {
