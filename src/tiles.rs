@@ -1,3 +1,7 @@
+use rayon::iter::{
+    IndexedParallelIterator, IntoParallelIterator, IntoParallelRefIterator, ParallelIterator,
+};
+
 use crate::utils::coordinates::*;
 
 use std::fmt;
@@ -118,16 +122,21 @@ impl Floor {
     }
 
     pub fn get_largest_rectangle(&self) -> u64 {
-        let mut largest: u64 = 0;
-        for (coord1_idx, coord1) in self.red_tiles.iter().enumerate() {
-            for coord2 in self.red_tiles.iter().skip(coord1_idx + 1) {
-                let this_rec_size = coord1.get_rec_area(coord2);
-                if this_rec_size > largest {
-                    largest = this_rec_size;
+        self.red_tiles
+            .par_iter()
+            .enumerate()
+            .map(move |(coord1_idx, coord1)| {
+                let mut largest = 0u64;
+                for coord2 in self.red_tiles.iter().skip(coord1_idx + 1) {
+                    let this_rec_size = coord1.get_rec_area(coord2);
+                    if this_rec_size > largest {
+                        largest = this_rec_size;
+                    }
                 }
-            }
-        }
-        largest
+                largest
+            })
+            .max()
+            .unwrap()
     }
 
     pub fn get_largest_rectangle_inside_perimeter(&mut self) -> u64 {

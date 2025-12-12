@@ -16,7 +16,10 @@ pub fn solve_pt2(input_file: &str) -> u64 {
 }
 
 pub fn solve(input_file: &str) -> (u64, u64) {
-    (0, 0)
+    let mut floor = Floor::new(input_file);
+    let pt1 = floor.get_largest_rectangle();
+    let pt2 = floor.get_largest_rectangle_inside_perimeter();
+    (pt1, pt2)
 }
 
 #[cfg(test)]
@@ -43,14 +46,14 @@ mod tests {
         assert_eq!(solve_pt2(my_file.get_str()), EXAMPLE_PT2);
     }
 
-    // #[test]
-    // fn actual() {
-    //     let my_file = FileParser::new("data/input.txt");
-    //     let (part_1, part_2) = solve(my_file.get_str());
-    //     assert_eq!(part_1, ACTUAL_PT1);
-    //     assert_eq!(part_2, ACTUAL_PT2);
-    // }
-    //
+    #[test]
+    fn actual() {
+        let my_file = FileParser::new("data/input.txt");
+        let (part_1, part_2) = solve(my_file.get_str());
+        assert_eq!(part_1, ACTUAL_PT1);
+        assert_eq!(part_2, ACTUAL_PT2);
+    }
+
     #[test]
     fn actual_pts() {
         let my_file = FileParser::new("data/input.txt");
